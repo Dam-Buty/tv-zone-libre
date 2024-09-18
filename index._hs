@@ -1,0 +1,82 @@
+on loadData
+  fetch /data/data.json as json with cache:"no-store" then
+    set global channels to result
+    template()
+    get localStorage.lastChannel
+    if it exists
+      zap(it)
+    else
+      zap(channels[0].id)
+    end
+
+
+def computePlaylistOffset(channel)
+  set now to Math.round(Date.now() / 1000)
+  set totalOffset to now - channel.startTime
+  set playlistDuration to 0
+
+  for video in channel.videos
+    set playlistDuration to playlistDuration + video.duration
+  end
+
+  return totalOffset mod playlistDuration
+end
+
+def zap(id)
+  set channel to channels.find( \ channel -> channel.id == id )
+  set localStorage.lastChannel to channel's id
+
+  if channel.link exists then
+    go to url ${channel.link} in new window
+  else
+    set global currentChannelId to id
+    set videoCursor to 0
+    set videoOffset to computePlaylistOffset(channel)
+
+    repeat while videoOffset > channel.videos[videoCursor].duration
+      set videoOffset to videoOffset - channel.videos[videoCursor].duration
+      set videoCursor to videoCursor + 1
+    end
+
+    set #tv-frame.src to channel.videos[videoCursor].url
+    set #tv-frame.currentTime to videoOffset
+    put `↜ ${channel.videos[videoCursor].title} ↝` into .currently-playing
+  end
+end
+
+def template()
+  for channel in channels
+    if channel.link exists
+      put `
+
+        <a href="${channel.link}" target="_blank" class="block">
+          <div 
+            class=
+              "cursor-alias p-2 rounded-lg opacity-70 hover:opacity-90 bg-[url('${channel.image}')] bg-contain"
+            title="${channel.description}"
+          >
+            <div class="w-4/5 h-full ml-[20%] text-2xl font-bold text-dark bg-light text-right p-2 rounded-lg">
+              ${channel.title}
+
+              <aside class="text-right text-xs mb-2 bg-dark text-light opacity-70 rounded-sm">
+                Pas hébergé sur Télé Zone Libre ⇾
+              </aside>
+            </div>
+          </div>
+        </a>
+      `
+      at the end of #card-container
+    else
+      put `
+      <div 
+        class=
+          "cursor-pointer p-2 rounded-lg opacity-70 hover:opacity-90 bg-[url('${channel.image}')] bg-contain"
+        title="${channel.description}" _="on click zap('${channel.id}')"
+      >
+        <div class="h-4/5 lg:h-full w-full lg:w-4/5 mt-[50%] lg:mt-0 lg:ml-[20%] text-xl lg:text-2xl font-bold text-dark bg-light text-right p-2 rounded-lg">${channel.title}</div>
+      </div>
+      `
+      at the end of #card-container
+    end
+  end
+end

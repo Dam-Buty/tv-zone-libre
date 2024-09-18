@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="Bienvenue sur Télé Zone Libre, prenez un pavé et installez vous ⚒️"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      property="og:image"
+      content="https://tv.lazone.at/images/fb-logo.webp"
+    />
+    <meta property="og:title" content="Bienvenue sur Télé Zone Libre" />
+    <meta
+      property="og:description"
+      content="La télé des années 90 dans ton ordi des années 20"
+    />
+    <title>Bienvenue sur Télé Zone Libre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        scrollbar-color: #f0edd5 #110b16;
+      }
+
+      #tv-container {
+        background-size: 100% 100%;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              dark: "#110B16",
+              light: "#F0EDD5",
+              sand: "#F1E9AE",
+              eggplant: "#533869",
+            },
+            backgroundImage: {
+              "tv-pattern": "url('images/tele-zone-libre.webp')",
+            },
+          },
+        },
+      };
+    </script>
+
+    <script type="text/hyperscript" src="index._hs"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.9"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.9/dist/socket.js"></script>
+  </head>
+  <body class="bg-dark text-light justify-center items-center h-screen">
+    <div class="flex flex-col lg:flex-row w-full h-full">
+      <div
+        id="cards-layout"
+        class="mb-1 lg:mb-6 lg:w-1/5 lg:h-full overflow-x-auto lg:overflow-y-auto"
+        _="init send loadData"
+      >
+        <div id="card-container" class="flex flex-row lg:flex-col"></div>
+      </div>
+
+      <h1
+        class="currently-playing lg:hidden bg-dark text-light opacity-70 text-center text-xl lg:text-4xl font-bold mb-2 rounded-lg"
+      ></h1>
+
+      <div
+        id="tv-container"
+        class="w-full lg:w-4/5 relative h-full lg:bg-tv-pattern bg-contain"
+      >
+        <div
+          class="hidden lg:block absolute top-0 left-0 w-[80px] h-full bg-dark bg-opacity-0 hover-bg-opacity-70 cursor-w-resize"
+          _="on click 
+              if #cards-layout's *width is '0px' then
+                transition #cards-layout width to 20%
+                transition #tv-container width to 80%
+                remove .cursor-e-resize from me
+                add .cursor-w-resize to me
+              else
+                transition #cards-layout width to 0
+                transition #tv-container width to 100%
+                remove .cursor-w-resize from me
+                add .cursor-e-resize to me
+              end
+          "
+        ></div>
+        <video
+          class="absolute top-0 left-0 w-full lg:top-[10%] lg:left-[8%] lg:w-[62%] lg:h-[76%] object-contain bg-black rounded-lg"
+          id="tv-frame"
+          src="images/static.mp4"
+          controls
+          autoplay
+          muted
+          _="on startAt(startTime) 
+            set my currentTime to startTime
+            on ended
+              zap(currentChannelId)
+          "
+        ></video>
+        <h1
+          class="currently-playing absolute hidden lg:block w-3/4 overflow-hidden text-nowrap bottom-2 left-1/5 bg-dark text-light opacity-70 text-center text-4xl font-bold mb-2 rounded-lg"
+        ></h1>
+      </div>
+    </div>
+  </body>
+</html>
